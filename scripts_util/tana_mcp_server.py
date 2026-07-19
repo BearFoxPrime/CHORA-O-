@@ -46,8 +46,11 @@ async def execute_with_epistemic_gate(query: str, params: list, expected_row_cou
             if plan_rows > 130000: raise Exception(f"Cost Gate Rejected: {plan_rows} exceeds 130K budget.")
             if plan_rows > (expected_row_count * 5): raise Exception("Rationale Audit Rejected: Safe-Cover Hacking detected.")
             
-            await cur.execute(query, params)
-            results = await cur.fetchall()
+            # Offload JSON serialization of results to PostgreSQL
+            json_query = f"SELECT COALESCE(json_agg(t), '[]')::text AS data FROM ({query}) t"
+            await cur.execute(json_query, params)
+            row = await cur.fetchone()
+            data_json = row['data']
             
             epistemic_badge = {
                 "$schema": "[https://chora.local/schema/epistemic_badge.v1.json](https://chora.local/schema/epistemic_badge.v1.json)",
@@ -56,7 +59,8 @@ async def execute_with_epistemic_gate(query: str, params: list, expected_row_cou
                 "uncertainty_surfaced": include_simulations,
                 "prov_activity_uri": f"chora:activity:{uuid.uuid4()}"
             }
-            return json.dumps({"epistemic_badge": epistemic_badge, "data": results}, indent=2, default=str)
+            badge_json = json.dumps(epistemic_badge, default=str)
+            return f'{{"epistemic_badge": {badge_json}, "data": {data_json}}}'
 
 @mcp.tool()
 async def fetch_geodetic_markers(min_lon: float, min_lat: float, max_lon: float, max_lat: float, expected_row_count: int, crs: str = "OGC:CRS84", surveyor_name: str = None) -> str:
