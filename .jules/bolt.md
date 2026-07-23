@@ -1,0 +1,3 @@
+## 2025-02-28 - FastMCP IPC Payload Compact JSON Serialization
+**Learning:** For inter-process communication (IPC) in FastMCP (like between `chora_tcp_mcp_proxy.py` and `tana_mcp_server.py`), standard JSON serialization with `indent=2` adds significant whitespace overhead, increasing payload size and slowing down string encoding, transmission, and parsing on both ends. This is a common bottleneck in high-throughput microservice or agentic OS architectures.
+**Action:** When working with FastMCP or other IPC mechanisms, always use compact JSON serialization (e.g. `separators=(',', ':')` in Python) instead of pretty-printing (`indent=2`) to minimize transmission size and maximize parsing speed.
