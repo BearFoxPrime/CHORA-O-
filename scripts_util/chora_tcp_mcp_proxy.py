@@ -87,7 +87,7 @@ class HardenedMCPMultiplexer:
             while True:
                 try:
                     response = await client_queue.get()
-                    writer.write((json.dumps(response) + '\n').encode('utf-8'))
+                    writer.write((json.dumps(response, separators=(',', ':')) + '\n').encode('utf-8'))
                     await writer.drain()
                 except Exception:
                     break
@@ -120,7 +120,7 @@ class HardenedMCPMultiplexer:
                             except Exception:
                                 pass
 
-                        payload = (json.dumps(request) + '\n').encode('utf-8')
+                        payload = (json.dumps(request, separators=(',', ':')) + '\n').encode('utf-8')
                         self.mcp_process.stdin.write(payload)
                         await self.mcp_process.stdin.drain()
                 except json.JSONDecodeError:

@@ -56,7 +56,7 @@ async def execute_with_epistemic_gate(query: str, params: list, expected_row_cou
                 "uncertainty_surfaced": include_simulations,
                 "prov_activity_uri": f"chora:activity:{uuid.uuid4()}"
             }
-            return json.dumps({"epistemic_badge": epistemic_badge, "data": results}, indent=2, default=str)
+            return json.dumps({"epistemic_badge": epistemic_badge, "data": results}, separators=(',', ':'), default=str)
 
 @mcp.tool()
 async def fetch_geodetic_markers(min_lon: float, min_lat: float, max_lon: float, max_lat: float, expected_row_count: int, crs: str = "OGC:CRS84", surveyor_name: str = None) -> str:
